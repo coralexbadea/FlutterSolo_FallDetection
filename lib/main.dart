@@ -4,6 +4,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
+import 'package:flutter_sms/flutter_sms.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 const int BUFFER_SIZE = 40;
 
@@ -20,7 +22,7 @@ class _AccelerometerAppState extends State<AccelerometerApp> {
   Interpreter? _interpreter;
   bool _interpreterLoaded = false;
   bool _showingWarning = false;
-
+  bool sms_status=false;
   AccelerometerEvent? get _lastEvent {
     if (_bufferIndex == 0) {
       return null;
@@ -40,7 +42,19 @@ class _AccelerometerAppState extends State<AccelerometerApp> {
     _init();
   }
 
+  Future<PermissionStatus> _getSmsPermissionStatus() async {
+    final status = await Permission.sms.status;
+    if (!status.isGranted) {
+      return await Permission.sms.request();
+    } else {
+      return status;
+    }
+  }
+
+
+
   Future<void> _init() async {
+    sms_status = (await _getSmsPermissionStatus()).isGranted;
     await _loadInterpreter();
 
     accelerometerEvents.listen((AccelerometerEvent event) async {
@@ -92,9 +106,21 @@ class _AccelerometerAppState extends State<AccelerometerApp> {
     _bufferIndex = (_bufferIndex + 1) % BUFFER_SIZE;
   }
 
+  void sendSms(String message, List<String> recipients) async {
+    try {
+      await sendSMS(
+          message: message, recipients: recipients);
+    } catch (e) {
+      print('Error sending SMS: $e');
+    }
+  }
+
   void _showWarning() {
     _showingWarning = true;
     _buffer = List.filled(BUFFER_SIZE, [0.0, 0.0, 0.0]);
+    if(sms_status){
+      sendSms('I fell!!', ['0721604363']);
+    }
     setState(() {});
   }
 

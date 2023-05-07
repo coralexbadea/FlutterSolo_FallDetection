@@ -44,6 +44,8 @@ dev_dependencies:
   tflite_flutter: ^0.9.1
   sensors_plus: ^2.0.5
   http: ^0.13.6
+  flutter_sms: ^2.3.3
+  permission_handler: ^8.2.2
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
